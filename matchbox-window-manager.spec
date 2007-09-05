@@ -1,5 +1,5 @@
 %define name 	matchbox-window-manager
-%define version 1.1
+%define version 1.2
 
 Summary: 	Window manager for the Matchbox Desktop
 Name: 		%name
