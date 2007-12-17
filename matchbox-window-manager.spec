@@ -10,7 +10,6 @@ License: 	GPL
 Group: 		Graphical desktop/Other
 Source: 	http://projects.o-hand.com/matchbox/sources/%name/%version/%{name}-%{version}.tar.bz2
 
-Buildroot: 	%_tmppath/%name-%version-buildroot
 BuildRequires:	pkgconfig libmatchbox-devel expat-devel libGConf2-devel
 BuildRequires:	startup-notification-devel libXsettings-client-devel
 Requires(pre):	GConf2
