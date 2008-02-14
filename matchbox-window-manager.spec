@@ -8,6 +8,7 @@ Release: 	%mkrel 1
 Url: 		http://projects.o-hand.com/matchbox/
 License: 	GPL
 Group: 		Graphical desktop/Other
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Source: 	http://projects.o-hand.com/matchbox/sources/%name/%version/%{name}-%{version}.tar.bz2
 
 BuildRequires:	pkgconfig libmatchbox-devel expat-devel libGConf2-devel
