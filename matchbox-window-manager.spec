@@ -3,10 +3,12 @@
 
 %define enable_drakx_version 0
 
+%{?_with_drakx: %global enable_drakx_version 1}
+
 Summary: 	Window manager for the Matchbox Desktop
 Name: 		%name
 Version: 	%version
-Release: 	%mkrel 2
+Release: 	%mkrel 3
 Url: 		http://projects.o-hand.com/matchbox/
 License: 	GPL
 Group: 		Graphical desktop/Other
@@ -18,6 +20,8 @@ Source1:	matchbox-ia_ora.tar.bz2
 Patch0:		matchbox-window-manager-1.2-svnfixes.patch
 # (fc) 1.2-2mdv various customizations for DrakX
 Patch1:		matchbox-window-manager-1.2-drakx.patch
+# (fc) 1.2-3mdv extend theme for separate decorations for modal dialogs
+Patch2:		matchbox-window-manager-1.2-modal.patch
 
 BuildRequires:	pkgconfig libmatchbox-devel expat-devel 
 %if !%enable_drakx_version
@@ -42,6 +46,7 @@ This package contains the window manager from Matchbox.
 %if %{enable_drakx_version}
 %patch1 -p1 -b .drakx-version
 %endif
+%patch2 -p1 -b .modal
 
 %build
 %configure2_5x --enable-expat --enable-composite \
