@@ -27,6 +27,7 @@ BuildRequires:	pkgconfig libmatchbox-devel expat-devel
 %if !%enable_drakx_version
 BuildRequires:	startup-notification-devel libXsettings-client-devel
 BuildRequires:	libGConf2-devel
+BuildRequires:  libxcomposite-devel
 %if %mdkversion <= 200900
 Requires(post):	GConf2
 %endif
