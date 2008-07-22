@@ -28,6 +28,7 @@ BuildRequires:	pkgconfig libmatchbox-devel expat-devel
 BuildRequires:	startup-notification-devel libXsettings-client-devel
 BuildRequires:	libGConf2-devel
 BuildRequires:  libxcomposite-devel
+BuildRequires:  libxdamage-devel
 %if %mdkversion <= 200900
 Requires(post):	GConf2
 %endif
