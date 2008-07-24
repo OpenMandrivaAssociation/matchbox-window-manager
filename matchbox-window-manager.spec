@@ -8,7 +8,7 @@
 Summary: 	Window manager for the Matchbox Desktop
 Name: 		%name
 Version: 	%version
-Release: 	%mkrel 3
+Release: 	%mkrel 4
 Url: 		http://projects.o-hand.com/matchbox/
 License: 	GPL
 Group: 		Graphical desktop/Other
@@ -24,7 +24,6 @@ Patch1:		matchbox-window-manager-1.2-drakx.patch
 Patch2:		matchbox-window-manager-1.2-modal.patch
 
 BuildRequires:	pkgconfig libmatchbox-devel expat-devel 
-%if !%enable_drakx_version
 BuildRequires:	startup-notification-devel libXsettings-client-devel
 BuildRequires:	libGConf2-devel
 BuildRequires:  libxcomposite-devel
@@ -33,7 +32,6 @@ BuildRequires:  libxdamage-devel
 Requires(post):	GConf2
 %endif
 Requires(preun):GConf2
-%endif
 
 %description
 Matchbox is a base environment for the X Window System running on non-desktop
@@ -42,34 +40,50 @@ for which screen space, input mechanisms or system resources are limited.
 
 This package contains the window manager from Matchbox.
 
+%package -n drakx-installer-matchbox
+Summary:	Customized version of Matchbox for DrakX installer
+Group:		Graphical desktop/Other
+
+%description -n drakx-installer-matchbox
+Customized version of Matchbox Window Manager for DrakX installer
+
 %prep
 %setup -q
 %patch0 -p1 -b .svnfixes
-%if %{enable_drakx_version}
 %patch1 -p1 -b .drakx-version
-%endif
 %patch2 -p1 -b .modal
 
 %build
+[ -d standard ] || mkdir standard
+cd standard
+CONFIGURE_TOP=.. \
 %configure2_5x --enable-expat --enable-composite \
-%if %{enable_drakx_version}
---disable-session --disable-keyboard --disable-ping-protocol --disable-xrm --disable-gconf
-%else
 --enable-gconf --enable-startup-notification
-%endif
 
 %make
+cd -
+
+[ -d drakx ] || mkdir drakx
+cd drakx
+CONFIGURE_TOP=.. \
+CFLAGS="%optflags -DDRAKX_VERSION" %configure2_5x --enable-expat --enable-composite \
+--disable-session --disable-keyboard --disable-ping-protocol --disable-xrm --disable-gconf --disable-startup-notification --disable-xsettings
+
+%make
+cd -
 
 %install
 rm -rf $RPM_BUILD_ROOT
+cd standard
 %makeinstall_std
+cd -
 
 #this file is ignored 
 rm -rf $RPM_BUILD_ROOT%{_sysconfdir}/matchbox/kbdconfig
 
-%if %{enable_drakx_version}
 tar -x -C $RPM_BUILD_ROOT -f %{SOURCE1}
-%endif
+
+install -m 755 drakx/src/matchbox-window-manager $RPM_BUILD_ROOT%{_bindir}/drakx-matchbox-window-manager
 
 %define schemas matchbox
 
@@ -91,9 +105,14 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root)
 %doc AUTHORS README ChangeLog
-%_bindir/*
-%if !%{enable_drakx_version}
 %_sysconfdir/gconf/schemas/matchbox.schemas
-%endif
+%_bindir/matchbox*
 %_datadir/matchbox/*
 %_datadir/themes/*
+%exclude %_datadir/themes/Ia*Ora*Smooth
+
+%files -n drakx-installer-matchbox
+%defattr(-,root,root)
+%_bindir/drakx-matchbox-window-manager
+%_datadir/themes/Ia*Ora*Smooth
+%_datadir/matchbox/*
