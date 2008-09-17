@@ -8,7 +8,7 @@
 Summary: 	Window manager for the Matchbox Desktop
 Name: 		%name
 Version: 	%version
-Release: 	%mkrel 7
+Release: 	%mkrel 8
 Url: 		http://projects.o-hand.com/matchbox/
 License: 	GPL
 Group: 		Graphical desktop/Other
@@ -16,6 +16,8 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Source0: 	http://projects.o-hand.com/matchbox/sources/%name/%version/%{name}-%{version}.tar.bz2
 #specific theme for installer
 Source1:	matchbox-ia_ora.tar.bz2
+Source2:	30-start-matchbox.xsetup
+Source3:	70-stop-matchbox.xsetup
 # (fc) 1.2-2mdv various bug fixes from SVN
 Patch0:		matchbox-window-manager-1.2-svnfixes.patch
 # (fc) 1.2-2mdv various customizations for DrakX
@@ -81,6 +83,10 @@ cd -
 #this file is ignored 
 rm -rf $RPM_BUILD_ROOT%{_sysconfdir}/matchbox/kbdconfig
 
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/X11/xsetup.d/
+
+install -m755 %{SOURCE2} %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/X11/xsetup.d/
+
 tar -x -C $RPM_BUILD_ROOT -f %{SOURCE1}
 
 install -m 755 drakx/src/matchbox-window-manager $RPM_BUILD_ROOT%{_bindir}/drakx-matchbox-window-manager
@@ -113,6 +119,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files -n drakx-installer-matchbox
 %defattr(-,root,root)
+%_sysconfdir/X11/xsetup.d/*.xsetup
 %_bindir/drakx-matchbox-window-manager
 %_datadir/themes/Ia*Ora*Smooth
 %_datadir/matchbox/*
