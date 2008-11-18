@@ -8,7 +8,7 @@
 Summary: 	Window manager for the Matchbox Desktop
 Name: 		%name
 Version: 	%version
-Release: 	%mkrel 9
+Release: 	%mkrel 10
 Url: 		http://projects.o-hand.com/matchbox/
 License: 	GPL
 Group: 		Graphical desktop/Other
@@ -17,7 +17,7 @@ Source0: 	http://projects.o-hand.com/matchbox/sources/%name/%version/%{name}-%{v
 #specific theme for installer
 Source1:	matchbox-ia_ora.tar.bz2
 Source2:	30-start-matchbox.xsetup
-Source3:	70-stop-matchbox.xsetup
+Source3:	80-stop-matchbox.xsetup
 # (fc) 1.2-2mdv various bug fixes from SVN
 Patch0:		matchbox-window-manager-1.2-svnfixes.patch
 # (fc) 1.2-2mdv various customizations for DrakX
