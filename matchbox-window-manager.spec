@@ -8,7 +8,7 @@
 Summary: 	Window manager for the Matchbox Desktop
 Name: 		%name
 Version: 	%version
-Release: 	%mkrel 10
+Release: 	%mkrel 11
 Url: 		http://projects.o-hand.com/matchbox/
 License: 	GPL
 Group: 		Graphical desktop/Other
@@ -59,7 +59,7 @@ Customized version of Matchbox Window Manager for DrakX installer
 [ -d standard ] || mkdir standard
 cd standard
 CONFIGURE_TOP=.. \
-%configure2_5x --enable-expat --enable-composite \
+%configure2_5x --enable-expat --disable-composite \
 --enable-gconf --enable-startup-notification
 
 %make
