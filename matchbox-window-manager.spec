@@ -8,7 +8,7 @@
 Summary: 	Window manager for the Matchbox Desktop
 Name: 		%name
 Version: 	%version
-Release: 	%mkrel 11
+Release: 	%mkrel 12
 Url: 		http://projects.o-hand.com/matchbox/
 License: 	GPL
 Group: 		Graphical desktop/Other
