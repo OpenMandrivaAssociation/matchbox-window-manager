@@ -27,7 +27,7 @@ Patch2:		matchbox-window-manager-1.2-modal.patch
 
 BuildRequires:	pkgconfig libmatchbox-devel expat-devel 
 BuildRequires:	startup-notification-devel libXsettings-client-devel
-BuildRequires:	libGConf2-devel
+BuildRequires:	libGConf2-devel GConf2
 BuildRequires:  libxcomposite-devel
 BuildRequires:  libxdamage-devel
 %if %mdkversion <= 200900
