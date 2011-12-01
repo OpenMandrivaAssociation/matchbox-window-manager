@@ -75,21 +75,21 @@ CFLAGS="%optflags -DDRAKX_VERSION" %configure2_5x --enable-expat --enable-compos
 cd -
 
 %install
-rm -rf $RPM_BUILD_ROOT
+rm -rf %{buildroot}
 cd standard
 %makeinstall_std
 cd -
 
 #this file is ignored 
-rm -rf $RPM_BUILD_ROOT%{_sysconfdir}/matchbox/kbdconfig
+rm -rf %{buildroot}%{_sysconfdir}/matchbox/kbdconfig
 
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/X11/xsetup.d/
+mkdir -p %{buildroot}%{_sysconfdir}/X11/xsetup.d/
 
-install -m755 %{SOURCE2} %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/X11/xsetup.d/
+install -m755 %{SOURCE2} %{SOURCE3} %{buildroot}%{_sysconfdir}/X11/xsetup.d/
 
-tar -x -C $RPM_BUILD_ROOT -f %{SOURCE1}
+tar -x -C %{buildroot} -f %{SOURCE1}
 
-install -m 755 drakx/src/matchbox-window-manager $RPM_BUILD_ROOT%{_bindir}/drakx-matchbox-window-manager
+install -m 755 drakx/src/matchbox-window-manager %{buildroot}%{_bindir}/drakx-matchbox-window-manager
 
 %define schemas matchbox
 
@@ -106,7 +106,7 @@ install -m 755 drakx/src/matchbox-window-manager $RPM_BUILD_ROOT%{_bindir}/drakx
 %endif
 
 %clean
-rm -rf $RPM_BUILD_ROOT
+rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root)
