@@ -1,0 +1,244 @@
+diff -p -up matchbox-window-manager-1.2/src/composite-engine.c.drakx-version matchbox-window-manager-1.2/src/composite-engine.c
+--- matchbox-window-manager-1.2/src/composite-engine.c.drakx-version	2007-01-25 18:50:14.000000000 +0100
++++ matchbox-window-manager-1.2/src/composite-engine.c	2008-09-30 17:23:05.000000000 +0200
+@@ -567,6 +567,9 @@ void
+ comp_engine_theme_init(Wm *w)
+ {
+   Pixmap                        transPixmap, blackPixmap, lowlightPixmap, 
++#ifdef DRAKX_VERSION
++                                backgroundPixmap,
++#endif
+                                 redPixmap;
+   XRenderPictureAttributes	pa;
+   XRenderColor                  c;
+@@ -574,6 +577,9 @@ comp_engine_theme_init(Wm *w)
+   Picture	                pics_to_free[] = { w->trans_picture,
+ 						   w->black_picture,
+ 						   w->lowlight_picture,
++#ifdef DRAKX_VERSION
++						   w->background_picture,
++#endif
+ 						   w->shadow_n_pic,
+ 						   w->shadow_e_pic,
+ 						   w->shadow_s_pic,
+@@ -633,6 +639,29 @@ comp_engine_theme_init(Wm *w)
+ 
+   XRenderFillRectangle (w->dpy, PictOpSrc, w->black_picture, &c, 0, 0, 1, 1);
+ 
++#ifdef DRAKX_VERSION
++
++/* background pixmap */
++
++  backgroundPixmap = XCreatePixmap (w->dpy, w->root, 1, 1, 32);
++
++  w->background_picture 
++    = XRenderCreatePicture (w->dpy, backgroundPixmap,
++			    XRenderFindStandardFormat (w->dpy, PictStandardARGB32),
++			    CPRepeat,
++			    &pa);
++
++  c.red   = 0x0000;
++  c.green = 0x0000;
++  c.blue  = 0x0000;
++
++  c.alpha = 0xffff;
++
++  XRenderFillRectangle (w->dpy, PictOpSrc, w->background_picture, &c, 0, 0, w->dpy_width, w->dpy_height);
++
++#endif
++
++
+ #if DEBUG
+   /* for visual composite debugging */
+ 
+@@ -1132,7 +1161,11 @@ _render_a_client(Wm           *w, 
+     }
+ 
+   /* Render lowlight dialog modal for root - e.g lowlight everything */
+-  if (lowlight_type == 2 && client->win_modal_blocker == None)
++  if (lowlight_type == 2 && client->win_modal_blocker == None
++#ifdef DRAKX_VERSION
++		  && !(client->type & MBCLIENT_TYPE_OVERRIDE)
++#endif
++		  )
+     XRenderComposite (w->dpy, PictOpOver, w->lowlight_picture, None, 
+ 		      w->root_buffer,
+ 		      0, 0, 0, 0, x, y,
+@@ -1249,11 +1282,13 @@ comp_engine_render(Wm *w, XserverRegion 
+       /* Render block of boring black in case of no top app or desktop */
+ 
+       XFixesSetPictureClipRegion (w->dpy, w->root_buffer, 0, 0, region);
+-  
++#ifdef DRAKX_VERSION
++      XRenderComposite (w->dpy, PictOpSrc, w->background_picture, 
++#else
+       XRenderComposite (w->dpy, PictOpSrc, w->black_picture, 
++#endif
+ 			None, w->root_buffer, 0, 0, 0, 0, 0, 0, 
+ 			w->dpy_width, w->dpy_height);
+-      
+       XFixesSetPictureClipRegion (w->dpy, w->root_buffer, 0, 0, None);
+ 
+       client_top_app = w->stack_bottom;
+diff -p -up matchbox-window-manager-1.2/src/dialog_client.c.drakx-version matchbox-window-manager-1.2/src/dialog_client.c
+--- matchbox-window-manager-1.2/src/dialog_client.c.drakx-version	2007-04-12 18:38:11.000000000 +0200
++++ matchbox-window-manager-1.2/src/dialog_client.c	2008-09-25 18:21:38.000000000 +0200
+@@ -85,6 +85,30 @@ dialog_client_get_offsets(Client *c, int
+       return;
+     }
+ 
++  if (c->flags & CLIENT_IS_MODAL_FLAG
++      && theme_has_frame_type_defined(c->wm->mbtheme, FRAME_MODAL))
++    {
++      *s = theme_frame_defined_height_get(c->wm->mbtheme, 
++				       FRAME_MODAL_SOUTH);
++      *e = theme_frame_defined_width_get(c->wm->mbtheme, 
++					 FRAME_MODAL_EAST );
++      *w = theme_frame_defined_width_get(c->wm->mbtheme, 
++					 FRAME_MODAL_WEST );
++      return;
++    }
++
++  if (c->flags & CLIENT_IS_MODAL_FLAG
++      && theme_has_frame_type_defined(c->wm->mbtheme, FRAME_MODAL))
++    {
++      *s = theme_frame_defined_height_get(c->wm->mbtheme, 
++				       FRAME_MODAL_SOUTH);
++      *e = theme_frame_defined_width_get(c->wm->mbtheme, 
++					 FRAME_MODAL_EAST );
++      *w = theme_frame_defined_width_get(c->wm->mbtheme, 
++					 FRAME_MODAL_WEST );
++      return;
++    }
++
+    *s = theme_frame_defined_height_get(c->wm->mbtheme, 
+ 				       FRAME_DIALOG_SOUTH);
+    *e = theme_frame_defined_width_get(c->wm->mbtheme, 
+@@ -203,6 +227,18 @@ dialog_client_title_height(Client *c)
+ 	return theme_frame_defined_height_get(c->wm->mbtheme, FRAME_DIALOG_NORTH);
+     }  
+ 
++  if (c->flags & CLIENT_IS_MODAL_FLAG
++      && theme_has_frame_type_defined(c->wm->mbtheme, FRAME_MODAL))
++  {
++	return theme_frame_defined_height_get(c->wm->mbtheme, FRAME_MODAL);
++  }
++
++  if (c->flags & CLIENT_IS_MODAL_FLAG
++      && theme_has_frame_type_defined(c->wm->mbtheme, FRAME_MODAL))
++  {
++	return theme_frame_defined_height_get(c->wm->mbtheme, FRAME_MODAL);
++  }
++
+   return theme_frame_defined_height_get(c->wm->mbtheme, FRAME_DIALOG);
+ }
+ 
+@@ -428,7 +464,11 @@ dialog_client_reparent(Client *c)
+ 
+    if (c->flags & CLIENT_IS_MODAL_FLAG
+        && w->config->super_modal
++#ifndef DRAKX_VERSION
+        && c->trans == NULL )	/* modal for device. XXX check recursive ? */
++#else
++       )
++#endif
+      {
+        /* Create an InputOnly fullscreen window to aid in making 
+ 	* modal dialogs *really* modal to the whole display by
+@@ -834,6 +874,20 @@ dialog_client_redraw(Client *c, Bool use
+       && theme_has_frame_type_defined(c->wm->mbtheme, FRAME_DIALOG_NORTH))
+     frame_ref_top   = FRAME_DIALOG_NORTH;
+ 
++  if (c->flags & CLIENT_IS_MODAL_FLAG && theme_has_frame_type_defined(c->wm->mbtheme, FRAME_MODAL)) {
++      frame_ref_top   = FRAME_MODAL;
++      frame_ref_east  = FRAME_MODAL_EAST;
++      frame_ref_west  = FRAME_MODAL_WEST;
++      frame_ref_south = FRAME_MODAL_SOUTH;
++  }
++
++  if (c->flags & CLIENT_IS_MODAL_FLAG && theme_has_frame_type_defined(c->wm->mbtheme, FRAME_MODAL)) {
++      frame_ref_top   = FRAME_MODAL;
++      frame_ref_east  = FRAME_MODAL_EAST;
++      frame_ref_west  = FRAME_MODAL_WEST;
++      frame_ref_south = FRAME_MODAL_SOUTH;
++  }
++
+   /* 'message dialogs have there own decorations */
+   if (c->flags & CLIENT_HAS_URGENCY_FLAG
+       && theme_has_message_decor(w->mbtheme))
+@@ -1032,6 +1086,9 @@ dialog_client_button_press(Client *c, XB
+ 	/* Not on button */
+ 	if (w->config->dialog_stratergy == WM_DIALOGS_STRATERGY_STATIC)
+ 	  {
++#ifdef DRAKX_VERSION
++		  return;
++#endif
+ 	    /* For static undraggble/stack fixed dialog we simply  
+ 	     * hide the dialog when titlebar is clicked on. 
+ 	     *
+diff -p -up matchbox-window-manager-1.2/src/structs.h.drakx-version matchbox-window-manager-1.2/src/structs.h
+--- matchbox-window-manager-1.2/src/structs.h.drakx-version	2008-09-25 18:21:38.000000000 +0200
++++ matchbox-window-manager-1.2/src/structs.h	2008-09-25 18:55:34.000000000 +0200
+@@ -83,19 +83,34 @@
+ 
+ #ifdef MB_HAVE_PNG
+ 
+-#define DEFAULT_THEME       DATADIR "/themes/Default/matchbox/theme.xml"
+ 
+-#define DEFAULTTHEME       DATADIR "/themes/Default/matchbox/theme.xml"
++#ifdef DRAKX_VERSION
++#define DEFAULT_THEME       DATADIR "/themes/Ia Ora Smooth/matchbox/theme.xml"
+ 
+-#define DEFAULT_THEMENAME  "Default"
++#define DEFAULTTHEME       DATADIR "/themes/Ia Ora Smooth/matchbox/theme.xml"
+ 
++#define DEFAULT_THEMENAME  "Ia Ora Smooth"
++
++#define DEFAULTTHEMENAME  "Ia Ora Smooth"
++#else
++#define DEFAULT_THEME       DATADIR "/themes/Default/matchbox/theme.xml"
++ 
++#define DEFAULTTHEME       DATADIR "/themes/Default/matchbox/theme.xml"
++ 
++#define DEFAULT_THEMENAME  "Default"
++ 
+ #define DEFAULTTHEMENAME  "Default"
++#endif
+ 
+ #else
+ 
++#ifdef DRAKX_VERSION
++#define DEFAULT_THEME       DATADIR "/themes/Ia Ora Smooth/matchbox/theme.xml"
++#define DEFAULT_THEME_NAME  "Ia Ora Smooth"
++#else
+ #define DEFAULT_THEME       DATADIR "/themes/Default/matchbox/theme.xml"
+ #define DEFAULT_THEME_NAME  "Default"
+-
++#endif
+ #endif
+ 
+ #define CONFDEFAULTS       PKGDATADIR "/defaults"
+@@ -643,6 +658,7 @@ typedef struct _wm
+   Picture	    trans_picture;
+   Picture	    black_picture;
+   Picture	    lowlight_picture;
++  Picture	    background_picture;
+ 
+ #ifdef DEBUG
+   Picture           red_picture; /* for visual composite debugging */
+diff -p -up matchbox-window-manager-1.2/src/wm.c.drakx-version matchbox-window-manager-1.2/src/wm.c
+--- matchbox-window-manager-1.2/src/wm.c.drakx-version	2008-09-25 18:21:38.000000000 +0200
++++ matchbox-window-manager-1.2/src/wm.c	2008-09-25 18:21:38.000000000 +0200
+@@ -319,7 +319,12 @@ wm_load_config (Wm   *w, 
+    w->config->use_icons        = 16;
+    w->config->no_cursor        = False;
+    w->config->dialog_shade     = False;   
++#ifdef DRAKX_VERSION
++   w->config->dialog_stratergy = WM_DIALOGS_STRATERGY_STATIC;
++   w->config->super_modal      = True;
++#else
+    w->config->dialog_stratergy = WM_DIALOGS_STRATERGY_CONSTRAINED;
++#endif
+    w->config->ping_handler     = getenv("MB_HUNG_APP_HANDLER");
+    w->config->ping_aggressive = getenv("MB_AGGRESSIVE_PING") ? True : False;
+ 

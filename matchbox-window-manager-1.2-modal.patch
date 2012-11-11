@@ -1,0 +1,162 @@
+From 08bffbf53ca5c070f7d22a9771b6295a006c17e9 Mon Sep 17 00:00:00 2001
+From: Frederic Crozatr <fcrozat@mandriva.com>
+Date: Mon, 21 Jul 2008 16:26:30 +0000
+Subject: [PATCH] modal
+
+---
+ src/dialog_client.c |   25 +++++++++++++++++++++++++
+ src/mbtheme.c       |   22 +++++++++++++++++-----
+ src/structs.h       |    5 +++++
+ 3 files changed, 47 insertions(+), 5 deletions(-)
+
+diff --git a/src/dialog_client.c b/src/dialog_client.c
+index 90fd41c..a5d3190 100644
+--- a/src/dialog_client.c
++++ b/src/dialog_client.c
+@@ -109,6 +109,18 @@ dialog_client_get_offsets(Client *c, int *e, int *s, int *w)
+       return;
+     }
+ 
++  if (c->flags & CLIENT_IS_MODAL_FLAG
++      && theme_has_frame_type_defined(c->wm->mbtheme, FRAME_MODAL))
++    {
++      *s = theme_frame_defined_height_get(c->wm->mbtheme, 
++				       FRAME_MODAL_SOUTH);
++      *e = theme_frame_defined_width_get(c->wm->mbtheme, 
++					 FRAME_MODAL_EAST );
++      *w = theme_frame_defined_width_get(c->wm->mbtheme, 
++					 FRAME_MODAL_WEST );
++      return;
++    }
++
+    *s = theme_frame_defined_height_get(c->wm->mbtheme, 
+ 				       FRAME_DIALOG_SOUTH);
+    *e = theme_frame_defined_width_get(c->wm->mbtheme, 
+@@ -239,6 +251,12 @@ dialog_client_title_height(Client *c)
+ 	return theme_frame_defined_height_get(c->wm->mbtheme, FRAME_MODAL);
+   }
+ 
++  if (c->flags & CLIENT_IS_MODAL_FLAG
++      && theme_has_frame_type_defined(c->wm->mbtheme, FRAME_MODAL))
++  {
++	return theme_frame_defined_height_get(c->wm->mbtheme, FRAME_MODAL);
++  }
++
+   return theme_frame_defined_height_get(c->wm->mbtheme, FRAME_DIALOG);
+ }
+ 
+@@ -888,6 +906,13 @@ dialog_client_redraw(Client *c, Bool use_cache)
+       frame_ref_south = FRAME_MODAL_SOUTH;
+   }
+ 
++  if (c->flags & CLIENT_IS_MODAL_FLAG && theme_has_frame_type_defined(c->wm->mbtheme, FRAME_MODAL)) {
++      frame_ref_top   = FRAME_MODAL;
++      frame_ref_east  = FRAME_MODAL_EAST;
++      frame_ref_west  = FRAME_MODAL_WEST;
++      frame_ref_south = FRAME_MODAL_SOUTH;
++  }
++
+   /* 'message dialogs have there own decorations */
+   if (c->flags & CLIENT_HAS_URGENCY_FLAG
+       && theme_has_message_decor(w->mbtheme))
+diff --git a/src/mbtheme.c b/src/mbtheme.c
+index 63c28f8..5668870 100644
+--- a/src/mbtheme.c
++++ b/src/mbtheme.c
+@@ -93,6 +93,11 @@ static struct frame_lookup_t
+   { "message-east",  FRAME_MSG_EAST    },
+   { "message-west",  FRAME_MSG_WEST    },
+   { "message-south", FRAME_MSG_SOUTH   },
++  { "modal",        FRAME_MODAL        },
++  { "modal-north",  FRAME_MODAL_NORTH },
++  { "modal-east",   FRAME_MODAL_EAST  },
++  { "modal-west",   FRAME_MODAL_WEST  },
++  { "modal-south",  FRAME_MODAL_SOUTH },
+ };
+ 
+ #define frame_lookup_cnt (sizeof(frame_lookup)/sizeof(struct frame_lookup_t))
+@@ -628,21 +633,24 @@ theme_frame_paint( MBTheme *theme,
+     case FRAME_DIALOG_SOUTH:
+     case FRAME_DIALOG_NT_SOUTH:
+     case FRAME_MSG_SOUTH:
++    case FRAME_MODAL_SOUTH:
+       decor_idx = SOUTH;
+       break;
+     case FRAME_MAIN_EAST: 
+     case FRAME_DIALOG_EAST:
+     case FRAME_DIALOG_NT_EAST:
+     case FRAME_MSG_EAST:
++    case FRAME_MODAL_EAST:
+       decor_idx = EAST;
+       break;
+     case FRAME_MAIN_WEST: 
+     case FRAME_DIALOG_WEST:
+     case FRAME_DIALOG_NT_WEST:
+     case FRAME_MSG_WEST:
++    case FRAME_MODAL_WEST:
+       decor_idx = WEST;
+       break;
+-      /* FRAME_MAIN, FRAME_DIALOG, FRAME_MSG, FRAME_DIALOG_NORTH: */
++      /* FRAME_MAIN, FRAME_DIALOG, FRAME_MSG, FRAME_DIALOG_NORTH, FRAME_MODAL : */
+     default:
+       decor_idx = NORTH;
+       break;
+@@ -777,7 +785,8 @@ theme_frame_paint( MBTheme *theme,
+   if (c->backing_masks[MSK_NORTH] != None &&
+       ( frame_type == FRAME_MAIN || frame_type == FRAME_DIALOG 
+ 	|| frame_type == FRAME_MSG || frame_type == FRAME_DIALOG_NORTH
+-	|| frame_type == FRAME_DIALOG_NT_NORTH)
++	|| frame_type == FRAME_DIALOG_NT_NORTH
++	|| frame_type == FRAME_MODAL || frame_type == FRAME_MODAL_NORTH)
+       )
+     mb_pixbuf_img_render_to_mask(theme->wm->pb, img, 
+ 				 c->backing_masks[MSK_NORTH],
+@@ -786,7 +795,8 @@ theme_frame_paint( MBTheme *theme,
+   if (c->backing_masks[MSK_SOUTH] != None  &&
+       ( frame_type == FRAME_MAIN_SOUTH || frame_type == FRAME_DIALOG_SOUTH 
+ 	|| frame_type == FRAME_MSG_SOUTH 
+-	|| frame_type == FRAME_DIALOG_NT_SOUTH)
++	|| frame_type == FRAME_DIALOG_NT_SOUTH
++	|| frame_type == FRAME_MODAL_SOUTH)
+       )
+     mb_pixbuf_img_render_to_mask(theme->wm->pb, img, 
+ 				 c->backing_masks[MSK_SOUTH],
+@@ -794,7 +804,8 @@ theme_frame_paint( MBTheme *theme,
+   
+   if (c->backing_masks[MSK_EAST] != None  &&
+       ( frame_type == FRAME_MAIN_EAST || frame_type == FRAME_DIALOG_EAST 
+-	|| frame_type == FRAME_MSG_EAST || frame_type == FRAME_DIALOG_NT_EAST)
++	|| frame_type == FRAME_MSG_EAST || frame_type == FRAME_DIALOG_NT_EAST
++        || frame_type == FRAME_MODAL_EAST)
+       )
+     mb_pixbuf_img_render_to_mask(theme->wm->pb, img, 
+ 				 c->backing_masks[MSK_EAST],
+@@ -802,7 +813,8 @@ theme_frame_paint( MBTheme *theme,
+   
+   if (c->backing_masks[MSK_WEST] != None  &&
+       ( frame_type == FRAME_MAIN_WEST || frame_type == FRAME_DIALOG_WEST 
+-	|| frame_type == FRAME_MSG_WEST || frame_type == FRAME_DIALOG_NT_WEST )
++	|| frame_type == FRAME_MSG_WEST || frame_type == FRAME_DIALOG_NT_WEST 
++	|| frame_type == FRAME_MODAL_WEST )
+       )
+     mb_pixbuf_img_render_to_mask(theme->wm->pb, img, 
+ 				 c->backing_masks[MSK_WEST],
+diff --git a/src/structs.h b/src/structs.h
+index 7a191bb..6159882 100644
+--- a/src/structs.h
++++ b/src/structs.h
+@@ -778,6 +778,11 @@ enum {
+   FRAME_MSG_EAST,
+   FRAME_MSG_WEST,
+   FRAME_MSG_SOUTH,
++  FRAME_MODAL,
++  FRAME_MODAL_NORTH,
++  FRAME_MODAL_EAST,
++  FRAME_MODAL_WEST,
++  FRAME_MODAL_SOUTH,
+   N_FRAME_TYPES
+ };
+ 
+-- 
+1.6.1.3
+

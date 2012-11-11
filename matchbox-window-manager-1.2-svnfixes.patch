@@ -1,0 +1,248 @@
+--- matchbox-window-manager/src/ewmh.c	(revision 1518)
++++ matchbox-window-manager/src/ewmh.c	(working copy)
+@@ -121,7 +121,8 @@
+     "_MB_WM_STATE",
+     "_NET_WM_WINDOW_TYPE_NOTIFICATION",
+     "_NET_WM_WINDOW_TYPE_DROPDOWN_MENU",
+-    "_NET_WM_WINDOW_TYPE_POPUP_MENU"
++    "_NET_WM_WINDOW_TYPE_POPUP_MENU",
++    "_MB_NUM_SYSTEM_MODAL_WINDOWS_PRESENT"
+   };
+ 
+   XInternAtoms (w->dpy, atom_names, ATOM_COUNT,
+@@ -453,9 +454,17 @@
+    * tree to check this. It will only work with 'super modal'. 
+   */
+   if (w->config->super_modal)
+-    XChangeProperty(w->dpy, w->root, w->atoms[_MB_NUM_MODAL_WINDOWS_PRESENT],
+-		    XA_CARDINAL, 32, PropModeReplace,
+-		    (unsigned char *)&w->n_modals_present, 1);
++    {
++      XChangeProperty(w->dpy, w->root, 
++		      w->atoms[_MB_NUM_MODAL_WINDOWS_PRESENT],
++		      XA_CARDINAL, 32, PropModeReplace,
++		      (unsigned char *)&w->n_modals_present, 1);
++
++      XChangeProperty(w->dpy, w->root, 
++		      w->atoms[_MB_NUM_SYSTEM_MODAL_WINDOWS_PRESENT],
++		      XA_CARDINAL, 32, PropModeReplace,
++		      (unsigned char *)&w->n_modal_blocker_wins, 1);
++    }
+ }
+ 
+ void
+--- matchbox-window-manager/src/toolbar_client_alt.c	(revision 1518)
++++ matchbox-window-manager/src/toolbar_client_alt.c	(working copy)
+@@ -256,7 +256,8 @@
+ 	  */
+ 	  XSync(w->dpy, False);
+ 	  
+-	  if (app_client)
++	  if (app_client &&
++	      app_client->type != MBCLIENT_TYPE_DESKTOP)
+ 	    {
+ 	      app_client->height -= c->height;
+ 	      app_client->move_resize(app_client);
+@@ -297,7 +298,8 @@
+     {
+       Client *app_client = c->trans;
+ 
+-      if (app_client)
++      if (app_client &&
++	  app_client->type != MBCLIENT_TYPE_DESKTOP)
+ 	{
+ 	  /* app_client could have likely dissapeared with the toolbar
+ 	   * but we havn't been told yet - therefore trap. 
+--- matchbox-window-manager/src/base_client.c	(revision 1518)
++++ matchbox-window-manager/src/base_client.c	(working copy)
+@@ -179,6 +179,10 @@
+ 		}
+ 	    }
+ 	}
++
++      if ((wmhints->flags & StateHint)
++	  && wmhints->initial_state == IconicState)
++	c->flags |= CLIENT_IS_MINIMIZED;	
+    }
+ 
+    dbg("%s() window group %li\n", __func__, c->win_group);
+--- matchbox-window-manager/src/keys.c	(revision 1518)
++++ matchbox-window-manager/src/keys.c	(working copy)
+@@ -35,10 +35,12 @@
+ 
+   for (keycode = min_kc; keycode <= max_kc; keycode++) {
+     for (col = 0; (k = XKeycodeToKeysym (w->dpy, keycode, col))
+-           != NoSymbol; col++)
+-      if (k == keysym && col == 1) {
++           != NoSymbol; col++) {
++      if (k == keysym && col == 1)
+         return True;
+-      }
++      if (k == keysym)
++	break;
++    }
+   }  
+   return False;
+ }
+--- matchbox-window-manager/src/structs.h	(revision 1518)
++++ matchbox-window-manager/src/structs.h	(working copy)
+@@ -223,7 +223,7 @@
+   _NET_WM_WINDOW_TYPE_NOTIFICATION,
+   _NET_WM_WINDOW_TYPE_DROPDOWN_MENU,
+   _NET_WM_WINDOW_TYPE_POPUP_MENU,
+-
++  _MB_NUM_SYSTEM_MODAL_WINDOWS_PRESENT,
+   ATOM_COUNT
+ 
+ } MBAtomEnum;
+@@ -295,7 +295,7 @@
+ #define CLIENT_IS_MOVING       (1<<19) /* Used by comosite engine */
+ #define CLIENT_DOCK_TITLEBAR_SHOW_ON_DESKTOP (1<<20)
+ #define CLIENT_NO_FOCUS_ON_MAP (1<<21) /* for _NET_WM_USER_TIME = 0 */
+-#define CLIENT_IS_MINIMIZED    (1<<23) /* used by toolbars */
++#define CLIENT_IS_MINIMIZED    (1<<23) /* used by toolbars + icon on map*/
+ #define CLIENT_TOOLBARS_MOVED_FOR_FULLSCREEN (1<<24)
+ #define CLIENT_IS_TRANSIENT_FOR_ROOT (1<<25)
+ #define CLIENT_HAS_URGENCY_FLAG (1<<26)
+--- matchbox-window-manager/src/mbtheme.c	(revision 1518)
++++ matchbox-window-manager/src/mbtheme.c	(working copy)
+@@ -512,7 +512,10 @@
+ 
+       if (w <= 0) w = 1;
+       if (h <= 0) h = 1;
+-	
++
++      if (x < 0) x = 0;
++      if (y < 0) y = 0;
++
+       switch (layer_list_item->id)
+ 	{
+ 
+--- matchbox-window-manager/src/wm.c	(revision 1518)
++++ matchbox-window-manager/src/wm.c	(working copy)
+@@ -1554,7 +1554,43 @@
+ 
+ 		 if (trans_client)
+ 		   {
+-		     trans_client->height += diff;
++		     if (trans_client->type == MBCLIENT_TYPE_DIALOG)
++		       {
++			 /* do not grow over their initial size
++			    because of IM resizing smaller */
++			 if (trans_client->height + diff 
++			              > trans_client->init_height)
++			   {
++			     trans_client->height = trans_client->init_height;
++			   }
++			 else if (diff < 0)
++			   {
++			     /* Input window has grown larger so push it 
++			      *	up but keep it on screen.
++			     */
++			     int x, y, w, h;
++			     dialog_client_get_coverage(trans_client, 
++							&x, &y, &w, &h);
++
++			     if (c->y < y+h)
++			       {
++				 int amount = (y+h) - c->y;
++				 
++				 /* move upwards */
++				 trans_client->y -= amount;
++				 /* but not over screen area */
++				 if (y-amount < 0)
++				   {
++				     trans_client->height -= amount-y;
++				     trans_client->y += amount-y;
++				   }
++			       }
++			   }
++		       }
++		     else /* Only Application window */
++		       if (trans_client->type != MBCLIENT_TYPE_DESKTOP)
++			 trans_client->height += diff;
++
+ 		     trans_client->move_resize(trans_client);
+ 		     trans_client->redraw(trans_client, False);
+ 		   }
+@@ -1987,6 +2023,9 @@
+ 		   dbg("%s() got toolbar atom\n", __func__ );
+ 		   c = toolbar_client_new(w, win);
+ 		   if (c == NULL) goto end;
++#ifdef USE_ALT_INPUT_WIN
++		   c->flags &= ~CLIENT_IS_MINIMIZED;
++#endif
+ 		 }
+ 	       else if (value[0] == w->atoms[WINDOW_TYPE_DESKTOP])
+ 		 {
+@@ -2094,6 +2133,12 @@
+       else if (c->type == MBCLIENT_TYPE_DIALOG) /* already exists, update  */
+ 	c->trans = t;  		/* TODO: what about other types 
+ 				         being transient for things ?*/
++
++      /* Make sure above state is inherited if parent has it */
++      if (c->trans != NULL
++	  && c->trans->type == MBCLIENT_TYPE_DIALOG 
++	  && c->trans->flags & CLIENT_HAS_ABOVE_STATE)
++	c->flags |= CLIENT_HAS_ABOVE_STATE;
+    }
+    
+    if (c == NULL) /* Noting else found, default to a main client */
+@@ -2125,6 +2170,9 @@
+    
+    c->move_resize(c);          	/* set pos + size */
+ 
++   /* send new configuration to client - needed */
++   client_deliver_config(c);
++
+    /* TODO:
+     *
+     * Its likely the size we given the new client, is not what it requested. 
+@@ -2142,15 +2190,32 @@
+     * Note, this seems worst on GTK apps.
+     */
+ 
++   XGrabButton(c->wm->dpy, Button1, 0, c->window, True, ButtonPressMask,
++	       GrabModeSync, GrabModeSync, None, None);
++
++   /* Handle an application started iconized */
++   if (c->flags & CLIENT_IS_MINIMIZED
++       && c->type == MBCLIENT_TYPE_APP)
++     {
++       /* Clear the flag now to be safe */
++       c->flags &= ~CLIENT_IS_MINIMIZED;
++
++       c->redraw(c, False);		/* draw the decorations ready */
++       c->iconize (c);
++
++       ewmh_update_lists(w); 
++
++       XUngrabServer(w->dpy);
++       XFlush(w->dpy);
++
++       goto end;
++     }
++
+    dbg("%s() showing new client\n", __func__);
+ 
+    c->redraw(c, False);		/* draw the decorations ready */
+-
+    wm_activate_client(c);       /* Map it into stack, ( will call show()) */
+ 
+-   XGrabButton(c->wm->dpy, Button1, 0, c->window, True, ButtonPressMask,
+-	       GrabModeSync, GrabModeSync, None, None);
+-
+    /* Let window know were all done */
+ 
+    ewmh_state_set(c); 		/* XXX This is likely not needed */
+--- matchbox-window-manager/src/client_common.c	(revision 1518)
++++ matchbox-window-manager/src/client_common.c	(working copy)
+@@ -824,7 +824,7 @@
+ 	 XUngrabPointer(w->dpy, CurrentTime); 
+ 
+ 	 client_deliver_message(c, w->atoms[MB_GRAB_TRANSFER],
+-				CurrentTime, e->subwindow, 0, 0, 0);
++				e->time, e->subwindow, e->button, 0, 0);
+ 	 return button_item->id;
+        }
+ 

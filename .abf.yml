@@ -1,0 +1,5 @@
+sources:
+  "30-start-matchbox.xsetup:"	cce8c1dc7258305aa76e45541856fab29d45714a
+  "80-stop-matchbox.xsetup:"	fce48e336ff4c4fdb7f2e44cb1670f86a900d439
+  "matchbox-ia_ora.tar.bz2:"	7a17661b0cf405128f8a517b1429197794b934ab
+  "matchbox-window-manager-1.2.tar.bz2:"	4e8ce03b54f363a85dbc8f1925d4b803036bcd46
