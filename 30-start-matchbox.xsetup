@@ -1,0 +1,16 @@
+#!/bin/sh
+# to be sourced (so it blocks as long as firefox runs)
+# (c) 2004 Mandrakesoft SA
+# (c) 2006,2007 Mandriva SA
+
+# this script runs a firefox instance with a specific profile
+# and points it at register page
+#[ -f /etc/sysconfig/firstboot ] && . /etc/sysconfig/firstboot
+[ -f /etc/sysconfig/finish-install ] && . /etc/sysconfig/finish-install
+grep -q '\binstall\b' /proc/cmdline
+RETVAL=$?
+
+if  [ \( "x$FINISH_INSTALL" = "xyes" -a -x /usr/sbin/finish-install \) -o \( $RETVAL = 0 \)  ]; then
+	/usr/bin/drakx-matchbox-window-manager > /dev/null 2>&1 &
+       echo $! > /var/run/drakx-matchbox-window-manager.pid
+fi

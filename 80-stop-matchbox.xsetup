@@ -1,0 +1,8 @@
+#!/bin/sh
+# to be sourced (so it blocks as long as firefox runs)
+# (c) 2004 Mandrakesoft SA
+# (c) 2006,2007 Mandriva SA
+
+# this script runs a firefox instance with a specific profile
+# and points it at register page
+[ -f /var/run/drakx-matchbox-window-manager.pid ] && kill `cat /var/run/drakx-matchbox-window-manager.pid `
