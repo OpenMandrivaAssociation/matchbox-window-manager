@@ -59,6 +59,7 @@ popd
 mkdir -p drakx
 pushd drakx
 CPPFLAGS="-DDRAKX_VERSION"  \
+CFLAGS="%{optflags} -Os" \
 %configure2_5x	--enable-expat	\
 		--enable-composite \
 		--disable-session \
@@ -103,6 +104,7 @@ install -m755 drakx/src/matchbox-window-manager -D %{buildroot}%{_bindir}/drakx-
 
 %changelog
 * Tue Dec 11 2012 Per Øyvind Karlsen <peroyvind@mandriva.org> 1.2-17
+- compile drakx build with -Os
 - cleanups
 
 * Fri May 06 2011 Funda Wang <fwang@mandriva.org> 1.2-16mdv2011.0
