@@ -1,18 +1,10 @@
-%define name 	matchbox-window-manager
-%define version 1.2
-
-%define enable_drakx_version 0
-
-%{?_with_drakx: %global enable_drakx_version 1}
-
 Summary: 	Window manager for the Matchbox Desktop
-Name: 		%name
-Version: 	%version
-Release: 	24
+Name: 		matchbox-window-manager
+Version: 	1.2
+Release: 	17
 Url: 		http://projects.o-hand.com/matchbox/
-License: 	GPL
+License: 	GPLv2+
 Group: 		Graphical desktop/Other
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Source0: 	http://projects.o-hand.com/matchbox/sources/%name/%version/%{name}-%{version}.tar.bz2
 #specific theme for installer
 Source1:	matchbox-ia_ora.tar.bz2
@@ -30,9 +22,6 @@ BuildRequires:	startup-notification-devel libXsettings-client-devel
 BuildRequires:	libGConf2-devel GConf2
 BuildRequires:  libxcomposite-devel
 BuildRequires:  libxdamage-devel
-%if %mdkversion <= 200900
-Requires(post):	GConf2
-%endif
 Requires(preun):GConf2
 
 %description
@@ -42,7 +31,7 @@ for which screen space, input mechanisms or system resources are limited.
 
 This package contains the window manager from Matchbox.
 
-%package -n drakx-installer-matchbox
+%package -n	drakx-installer-matchbox
 Summary:	Customized version of Matchbox for DrakX installer
 Group:		Graphical desktop/Other
 
@@ -51,83 +40,71 @@ Customized version of Matchbox Window Manager for DrakX installer
 
 %prep
 %setup -q
-%patch0 -p1 -b .svnfixes
-%patch1 -p1 -b .drakx-version
-%patch2 -p1 -b .modal
+%patch0 -p1 -b .svnfixes~
+%patch1 -p1 -b .drakx-version~
+%patch2 -p1 -b .modal~
 
 %build
-[ -d standard ] || mkdir standard
-cd standard
-CONFIGURE_TOP=.. \
-CFLAGS="%{optflags} -lm"
-%configure2_5x --enable-expat --disable-composite \
---enable-gconf --enable-startup-notification
-
+CONFIGURE_TOP="$PWD"
+LDFLAGS="%{ldflags} -lm"
+mkdir -p standard
+pushd standard
+%configure2_5x	--enable-expat \
+		--disable-composite \
+		--enable-gconf \
+		--enable-startup-notification
 %make
-cd -
+popd
 
-[ -d drakx ] || mkdir drakx
-cd drakx
-CONFIGURE_TOP=.. \
-CFLAGS="%optflags -DDRAKX_VERSION -lm" %configure2_5x --enable-expat --enable-composite \
---disable-session --disable-keyboard --disable-ping-protocol --disable-xrm --disable-gconf --disable-startup-notification --disable-xsettings
-
+mkdir -p drakx
+pushd drakx
+CPPFLAGS="-DDRAKX_VERSION"  \
+%configure2_5x	--enable-expat	\
+		--enable-composite \
+		--disable-session \
+		--disable-keyboard \
+		--disable-ping-protocol \
+		--disable-xrm \
+		--disable-gconf \
+		--disable-startup-notification \
+		--disable-xsettings
 %make
-cd -
+popd
 
 %install
-rm -rf $RPM_BUILD_ROOT
-cd standard
-%makeinstall_std
-cd -
+%makeinstall_std -C standard
 
 #this file is ignored 
-rm -rf $RPM_BUILD_ROOT%{_sysconfdir}/matchbox/kbdconfig
+rm %{buildroot}%{_sysconfdir}/matchbox/kbdconfig
 
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/X11/xsetup.d/
+mkdir -p %{buildroot}%{_sysconfdir}/X11/xsetup.d/
 
 install -m755 %{SOURCE2} %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/X11/xsetup.d/
 
-tar -x -C $RPM_BUILD_ROOT -f %{SOURCE1}
+tar -x -C %{buildroot} -f %{SOURCE1}
 
-install -m 755 drakx/src/matchbox-window-manager $RPM_BUILD_ROOT%{_bindir}/drakx-matchbox-window-manager
-
-%define schemas matchbox
-
-%if %mdkversion < 200900
-%if !%{enable_drakx_version}
-%post
-%post_install_gconf_schemas %{schemas}
-%endif
-%endif
-
-%if !%{enable_drakx_version}
-%preun
-%preun_uninstall_gconf_schemas %{schemas}
-%endif
-
-%clean
-rm -rf $RPM_BUILD_ROOT
+install -m755 drakx/src/matchbox-window-manager -D %{buildroot}%{_bindir}/drakx-matchbox-window-manager
 
 %files
-%defattr(-,root,root)
 %doc AUTHORS README ChangeLog
-%_sysconfdir/gconf/schemas/matchbox.schemas
-%_bindir/matchbox*
-%_datadir/matchbox/*
-%_datadir/themes/*
-%exclude %_datadir/themes/Ia*Ora*Smooth
-%exclude %_datadir/matchbox/mbnoapp.xpm
+%{_sysconfdir}/gconf/schemas/matchbox.schemas
+%{_bindir}/matchbox*
+%{_datadir}/matchbox/*
+%{_datadir}/themes/*
+%exclude %{_datadir}/themes/Ia*Ora*Smooth
+%exclude %{_datadir}/matchbox/mbnoapp.xpm
 
 %files -n drakx-installer-matchbox
-%defattr(-,root,root)
-%_sysconfdir/X11/xsetup.d/*.xsetup
-%_bindir/drakx-matchbox-window-manager
-%_datadir/themes/Ia*Ora*Smooth
-%_datadir/matchbox/*
+%{_sysconfdir}/X11/xsetup.d/*.xsetup
+%{_bindir}/drakx-matchbox-window-manager
+%{_datadir}/themes/Ia*Ora*Smooth
+%{_datadir}/matchbox/*
 
 
 %changelog
+* Tue Dec 11 2012 Per Øyvind Karlsen <peroyvind@mandriva.org> 1.2-17
+- cleanups
+
 * Fri May 06 2011 Funda Wang <fwang@mandriva.org> 1.2-16mdv2011.0
 + Revision: 669809
 - add br
