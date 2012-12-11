@@ -1,11 +1,11 @@
-Summary: 	Window manager for the Matchbox Desktop
-Name: 		matchbox-window-manager
-Version: 	1.2
-Release: 	17
-Url: 		http://projects.o-hand.com/matchbox/
-License: 	GPLv2+
-Group: 		Graphical desktop/Other
-Source0: 	http://projects.o-hand.com/matchbox/sources/%name/%version/%{name}-%{version}.tar.bz2
+Summary:	Window manager for the Matchbox Desktop
+Name:		matchbox-window-manager
+Version:	1.2
+Release:	17
+Url:		http://projects.o-hand.com/matchbox/
+License:	GPLv2+
+Group:		Graphical desktop/Other
+Source0:	http://projects.o-hand.com/matchbox/sources/%name/%version/%{name}-%{version}.tar.bz2
 #specific theme for installer
 Source1:	matchbox-ia_ora.tar.bz2
 Source2:	30-start-matchbox.xsetup
@@ -20,8 +20,8 @@ Patch2:		matchbox-window-manager-1.2-modal.patch
 BuildRequires:	pkgconfig pkgconfig(libmb) pkgconfig(expat)
 BuildRequires:	pkgconfig(libstartup-notification-1.0) libXsettings-client-devel
 BuildRequires:	pkgconfig(gconf-2.0) GConf2
-BuildRequires:  pkgconfig(xcomposite)
-BuildRequires:  pkgconfig(xdamage)
+BuildRequires:	pkgconfig(xcomposite)
+BuildRequires:	pkgconfig(xdamage)
 Requires(preun):GConf2
 
 %description
@@ -35,7 +35,7 @@ This package contains the window manager from Matchbox.
 Summary:	Customized version of Matchbox for DrakX installer
 Group:		Graphical desktop/Other
 
-%description -n drakx-installer-matchbox
+%description -n	drakx-installer-matchbox
 Customized version of Matchbox Window Manager for DrakX installer
 
 %prep
