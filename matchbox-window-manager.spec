@@ -58,8 +58,7 @@ popd
 
 mkdir -p drakx
 pushd drakx
-CPPFLAGS="-DDRAKX_VERSION"  \
-CFLAGS="%{optflags} -Os" \
+CFLAGS="%{optflags} -DDRAKX_VERSION -Os" \
 %configure2_5x	--enable-expat	\
 		--enable-composite \
 		--disable-session \
@@ -80,7 +79,7 @@ rm %{buildroot}%{_sysconfdir}/matchbox/kbdconfig
 
 mkdir -p %{buildroot}%{_sysconfdir}/X11/xsetup.d/
 
-install -m755 %{SOURCE2} %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/X11/xsetup.d/
+install -m755 %{SOURCE2} %{SOURCE3} %{buildroot}%{_sysconfdir}/X11/xsetup.d/
 
 tar -x -C %{buildroot} -f %{SOURCE1}
 
@@ -100,7 +99,6 @@ install -m755 drakx/src/matchbox-window-manager -D %{buildroot}%{_bindir}/drakx-
 %{_bindir}/drakx-matchbox-window-manager
 %{_datadir}/themes/Ia*Ora*Smooth
 %{_datadir}/matchbox/*
-
 
 %changelog
 * Tue Dec 11 2012 Per Øyvind Karlsen <peroyvind@mandriva.org> 1.2-17
