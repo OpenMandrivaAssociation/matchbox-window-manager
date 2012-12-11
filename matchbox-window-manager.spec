@@ -17,11 +17,11 @@ Patch1:		matchbox-window-manager-1.2-drakx.patch
 # (fc) 1.2-3mdv extend theme for separate decorations for modal dialogs
 Patch2:		matchbox-window-manager-1.2-modal.patch
 
-BuildRequires:	pkgconfig libmatchbox-devel expat-devel 
-BuildRequires:	startup-notification-devel libXsettings-client-devel
-BuildRequires:	libGConf2-devel GConf2
-BuildRequires:  libxcomposite-devel
-BuildRequires:  libxdamage-devel
+BuildRequires:	pkgconfig pkgconfig(libmb) pkgconfig(expat)
+BuildRequires:	pkgconfig(libstartup-notification-1.0) libXsettings-client-devel
+BuildRequires:	pkgconfig(gconf-2.0) GConf2
+BuildRequires:  pkgconfig(xcomposite)
+BuildRequires:  pkgconfig(xdamage)
 Requires(preun):GConf2
 
 %description
@@ -102,6 +102,7 @@ install -m755 drakx/src/matchbox-window-manager -D %{buildroot}%{_bindir}/drakx-
 
 %changelog
 * Tue Dec 11 2012 Per Øyvind Karlsen <peroyvind@mandriva.org> 1.2-17
+- use pkgconfig(foo) deps for buildrequires
 - compile drakx build with -Os
 - cleanups
 
