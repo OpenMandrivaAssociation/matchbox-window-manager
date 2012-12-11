@@ -89,16 +89,14 @@ install -m755 drakx/src/matchbox-window-manager -D %{buildroot}%{_bindir}/drakx-
 %doc AUTHORS README ChangeLog
 %{_sysconfdir}/gconf/schemas/matchbox.schemas
 %{_bindir}/matchbox*
-%{_datadir}/matchbox/*
 %{_datadir}/themes/*
 %exclude %{_datadir}/themes/Ia*Ora*Smooth
-%exclude %{_datadir}/matchbox/mbnoapp.xpm
 
 %files -n drakx-installer-matchbox
 %{_sysconfdir}/X11/xsetup.d/*.xsetup
 %{_bindir}/drakx-matchbox-window-manager
 %{_datadir}/themes/Ia*Ora*Smooth
-%{_datadir}/matchbox/*
+%{_datadir}/matchbox/mbnoapp.xpm
 
 %changelog
 * Tue Dec 11 2012 Per Øyvind Karlsen <peroyvind@mandriva.org> 1.2-17
