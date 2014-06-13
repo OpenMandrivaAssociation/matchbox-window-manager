@@ -1,7 +1,7 @@
 Summary:	Window manager for the Matchbox Desktop
 Name:		matchbox-window-manager
 Version:	1.2
-Release:	22
+Release:	23
 License:	GPLv2+
 Group:		Graphical desktop/Other
 Url:		http://projects.o-hand.com/matchbox/
