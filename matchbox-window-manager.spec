@@ -1,7 +1,7 @@
 Summary:	Window manager for the Matchbox Desktop
 Name:		matchbox-window-manager
 Version:	1.2
-Release:	26
+Release:	27
 License:	GPLv2+
 Group:		Graphical desktop/Other
 Url:		http://projects.o-hand.com/matchbox/
@@ -24,7 +24,7 @@ BuildRequires:	pkgconfig(libmb)
 BuildRequires:	pkgconfig(libstartup-notification-1.0)
 BuildRequires:	pkgconfig(xcomposite)
 BuildRequires:	pkgconfig(xdamage)
-Requires(preun):GConf2
+Requires(preun):	GConf2
 
 %description
 Matchbox is a base environment for the X Window System running on non-desktop
@@ -33,7 +33,7 @@ for which screen space, input mechanisms or system resources are limited.
 
 This package contains the window manager from Matchbox.
 
-%package -n	drakx-installer-matchbox
+%package -n drakx-installer-matchbox
 Summary:	Customized version of Matchbox for DrakX installer
 Group:		Graphical desktop/Other
 
@@ -49,7 +49,7 @@ CONFIGURE_TOP="$PWD"
 LDFLAGS="%{ldflags} -lm"
 mkdir -p standard
 pushd standard
-%configure2_5x \
+%configure \
 	--enable-expat \
 	--disable-composite \
 	--enable-gconf \
@@ -59,10 +59,10 @@ popd
 
 mkdir -p drakx
 pushd drakx
-CFLAGS="%{optflags} -DDRAKX_VERSION -Os" \
-%configure2_5x \
+CFLAGS="%{optflags} -DDRAKX_VERSION" \
+%configure \
 	--enable-expat	\
-	--enable-composite \
+	--disable-composite \
 	--disable-session \
 	--disable-keyboard \
 	--disable-ping-protocol \
