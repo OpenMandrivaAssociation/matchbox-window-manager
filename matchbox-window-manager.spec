@@ -1,7 +1,7 @@
 Summary:	Window manager for the Matchbox Desktop
 Name:		matchbox-window-manager
 Version:	1.2
-Release:	28
+Release:	29
 License:	GPLv2+
 Group:		Graphical desktop/Other
 Url:		http://projects.o-hand.com/matchbox/
@@ -99,4 +99,3 @@ install -m755 drakx/src/matchbox-window-manager -D %{buildroot}%{_bindir}/drakx-
 %{_bindir}/drakx-matchbox-window-manager
 %{_datadir}/themes/Ia*Ora*Smooth
 %{_datadir}/matchbox/mbnoapp.xpm
-

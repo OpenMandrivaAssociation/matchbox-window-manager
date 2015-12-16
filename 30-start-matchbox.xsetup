@@ -11,8 +11,9 @@ grep -q '\binstall\b' /proc/cmdline
 RETVAL=$?
 
 if  [ \( "x$FINISH_INSTALL" = "xyes" -a -x /usr/sbin/finish-install \) -o \( $RETVAL = 0 \)  ]; then
-	export GTK2_RC_FILES=/usr/share/themes/Breeze-dark-gtk/gtk-2.0/gtkrc
-	export GTK_THEME="Breeze-dark-gtk"
+# (tpg) this is based on breeze-gtk package
+	export GTK2_RC_FILES=/usr/share/themes/Breeze-Dark/gtk-2.0/gtkrc
+	export GTK_THEME="Breeze-Dark"
 	/usr/bin/drakx-matchbox-window-manager > /dev/null 2>&1 &
 	echo $! > /var/run/drakx-matchbox-window-manager.pid
 fi
