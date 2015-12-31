@@ -12,8 +12,8 @@ RETVAL=$?
 
 if  [ \( "x$FINISH_INSTALL" = "xyes" -a -x /usr/sbin/finish-install \) -o \( $RETVAL = 0 \)  ]; then
 # (tpg) this is based on breeze-gtk package
-	export GTK2_RC_FILES=/usr/share/themes/Breeze-Dark/gtk-2.0/gtkrc
-	export GTK_THEME="Breeze-Dark"
+	export GTK2_RC_FILES=/usr/share/themes/Breeze/gtk-2.0/gtkrc
+	export GTK_THEME="Breeze"
 	/usr/bin/drakx-matchbox-window-manager > /dev/null 2>&1 &
 	echo $! > /var/run/drakx-matchbox-window-manager.pid
 fi
