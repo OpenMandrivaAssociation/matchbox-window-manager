@@ -1,7 +1,7 @@
 Summary:	Window manager for the Matchbox Desktop
 Name:		matchbox-window-manager
 Version:	1.2
-Release:	30
+Release:	31
 License:	GPLv2+
 Group:		Graphical desktop/Other
 Url:		http://projects.o-hand.com/matchbox/
@@ -62,7 +62,7 @@ pushd drakx
 CFLAGS="%{optflags} -DDRAKX_VERSION" \
 %configure \
 	--enable-expat	\
-	--disable-composite \
+	--enable-composite \
 	--disable-session \
 	--disable-keyboard \
 	--disable-ping-protocol \
