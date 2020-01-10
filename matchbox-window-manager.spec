@@ -42,7 +42,7 @@ Customized version of Matchbox Window Manager for DrakX installer
 
 %prep
 %setup -q
-%apply_patches
+%autopatch -p1
 
 %build
 CONFIGURE_TOP="$PWD"
