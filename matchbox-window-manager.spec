@@ -4,7 +4,7 @@ Version:	1.2
 Release:	34
 License:	GPLv2+
 Group:		Graphical desktop/Other
-Url:		http://projects.o-hand.com/matchbox/
+Url:		https://projects.o-hand.com/matchbox/
 Source0:	http://projects.o-hand.com/matchbox/sources/%name/%version/%{name}-%{version}.tar.bz2
 #specific theme for installer
 Source1:	matchbox-ia_ora.tar.bz2
