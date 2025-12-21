@@ -17,6 +17,11 @@ Patch1:		matchbox-window-manager-1.2-drakx.patch
 # (fc) 1.2-3mdv extend theme for separate decorations for modal dialogs
 Patch2:		matchbox-window-manager-1.2-modal.patch
 
+BuildRequires:	autoconf
+BuildRequires:	automake
+BuildRequires:	libtool-base
+BuildRequires:	slibtool
+BuildRequires:	make
 BuildRequires:	Xsettings-client-devel
 BuildRequires:	pkgconfig(expat)
 BuildRequires:	pkgconfig(gconf-2.0) GConf2
